@@ -30,7 +30,6 @@ uchar ** Cartela(void) {
       int c = 0;
       uchar value = 0;
 
-      PrintCartela(cartela);
       while (strchr(cartela[i], value))
           value = Randchar(ini, fim);
       cartela[i][j] = value;
@@ -46,12 +45,17 @@ uchar Randchar(char inicio, char limite) {
 }
 
 void PrintCartela(char cartela[5][5]) {
+  printf("    ");
   for (char j = 0; j < 5; j++)
-      printf(" %02c |", bingo[j]);
+      printf(" %02c  ", bingo[j]);
   puts("");
 
   for (char i = 0; i < 5; i++) {
     for (char j = 0; j < 5; j++) {
+      if (j == 0) {
+        printf(" %i |", i+1);
+      }
+
       uchar value = cartela[i][j];
       printf(" %02i |", value);
 
