@@ -31,7 +31,8 @@ uchar ** Cartela(void) {
       uchar value = 0;
 
       PrintCartela(cartela);
-      value = Randchar(ini, fim);
+      while (strchr(cartela[i], value))
+          value = Randchar(ini, fim);
       cartela[i][j] = value;
     }
   }
