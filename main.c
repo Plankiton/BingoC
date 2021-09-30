@@ -1,54 +1,67 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
-int Casa(int **);
-int ** Cartela(void);
+typedef unsigned char uchar;
+
+char Casa(char **);
+void PrintCartela(char [5][5]);
+char Randchar(char, char);
+uchar ** Cartela(void);
+
+const char * bingo = "BINGO";
+char bingo_range[5][2] = {
+  { 1, 19}, // B
+  {20, 39}, // I
+  {40, 59}, // N
+  {60, 79}, // G
+  {80, 99}, // O
+};
 
 int main(int argc, char *argv[])
 {
-  
+  char ** c = Cartela();
+  PrintCartela(c);
   return 0;
 }
 
-int ** Cartela(void) {
-  int ** cartela = (int**)malloc((size_t)5*5);
+uchar ** Cartela(void) {
+  uchar ** c = (uchar**) malloc(25 * (sizeof (char)));
 
-  for (int i = 0; i < 5; i++) {
-    for (int j = 0; j < 5; j++) {
-      cartela[i][j] = Casa(cartela);
+  time_t now;
+  localtime(&now);
+  srand(time(&now));
+  uchar cartela[5][5];
+  for (char i = 0; i < 5; i++) {
+    for (char j = 0; j < 5; j++) {
+      const char ini = bingo_range[j][0], fim = bingo_range[j][1];
+
+      uchar value = Randchar(ini, fim);
+      do {
+        cartela[i][j] = value;
+        value = Randchar(ini, fim);
+      } while (strchr((const char *)cartela, value));
     }
   }
 
-  return cartela;
+  memcpy(c, cartela, 25);
+  return c;
 }
 
-int RandInt(int limite) {
-  unsigned int r = 0;
-
-  srand(time(NULL));
-  // Enquanto o valor gerado for 0
-  while (!r)
-    r = rand();
-
-  // Retorna resto da divisão pelo limite mais 1. (limita o número a esse limite)
-  return r % limite+1;
+char Randchar(char inicio, char limite) {
+  return (inicio-1 + rand()) % (limite+1);
 }
 
-int Casa(int ** cartela) {
-  int * casa = *cartela, valor = RandInt(99);
+void PrintCartela(char cartela[5][5]) {
+  for (char i = 0; i < 5; i++) {
+    for (char j = 0; j < 5; j++) {
+      uchar value = cartela[i][j];
+      printf(" %02i |", value);
 
-  int tem_repetido = 1;
-  while (tem_repetido) {
-    tem_repetido = 0;
-    for (int i = 0; i < 25; i++) {
-      if (casa[i] == valor) {
-        valor = RandInt(99);
-        tem_repetido = 1;
-        break;
-      }
+      // cartela[i][j] = value;
+      if (!((j+1)%5))
+          puts("");
     }
   }
-
-  return valor;
 }
