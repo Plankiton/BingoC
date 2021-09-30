@@ -14,6 +14,30 @@ const int bingo_range[5][2] = {
   {80, 99}, // O
 };
 
+void troca(uchar* a, uchar* b) {
+    uchar temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void OrgVet(uchar * vet, uchar n) {
+    uchar i, j, min;
+
+    uchar v[n];
+    memcpy(v, vet, n);
+
+    for (i = 0; i < n - 1; i++) {
+        min = i;
+        for (j = i + 1; j < n; j++)
+            if (v[j] < v[min])
+                min = j;
+
+        troca(&v[min], &v[i]);
+    }
+
+    memcpy(vet, v, n);
+}
+
 uchar ** Cartela(uchar empty) {
   uchar ** c = (uchar**) malloc(25 * (sizeof (char)));
 
@@ -35,10 +59,14 @@ uchar ** Cartela(uchar empty) {
       int c = 0;
       uchar value = 0;
 
-      while (strchr(cartela[i], value))
+      while (strchr((const char*)cartela[i], value))
           value = Randchar(ini, fim);
       cartela[i][j] = value;
     }
+  }
+
+  for (int i = 0; i < 5; i++) {
+    OrgVet(&cartela[i], 5);
   }
 
   memcpy(c, cartela, 25);
