@@ -3,6 +3,7 @@
 #include <string.h>
 #include "bingo.h"
 
+void menuPrincipal();
 
 FILE * ijogadorf,
   * icartelaf,
@@ -19,48 +20,38 @@ byte in,
 
 int main(int argc, char *argv[])
 {
-
-  ocartelaf = fopen("carts.bin", "wb");
-  ojogadorf = fopen("jogadors.txt", "wb");
-  cartela = Cartela(1);
+  cartela = Cartela();
 
   byte action = 0;
   while (in != 'q') {
     action = 0;
     system("clear");
 
-    ocartelaf = fopen("carts.bin", "ab");
-    icartelaf = fopen("carts.bin", "rb");
-    ojogadorf = fopen("jogadors.txt", "ab");
-    ijogadorf = fopen("jogadors.txt", "rb");
+    ocartelaf = fopen("catelas.bin", "ab");
+    icartelaf = fopen("catelas.bin", "rb");
+    ojogadorf = fopen("jogadores.txt", "ab");
+    ijogadorf = fopen("jogadores.txt", "rb");
 
 
     switch (menu) {
       case '0':
-        printf(" BINGO - Menu Principal\n");
-        printf(" ------------------------------------------\n");
-        printf(" 1 - Criar cartelaelas\n");
-        printf(" 2 - Ver cartelaelas\n");
-        printf(" 3 - Atribuir cartelaelas\n");
-        printf(" 4 - jogadorar Bingo!\n");
-        printf(" q - Sair do jogadoro\n");
-        printf(" ------------------------------------------\n");
-        printf(" \n");
-        printf(":");
+        menuPrincipal();
         break;
       case '1':
         printf(" BINGO - Criação de cartelaela\n");
         printf(" ------------------------------------------\n");
         if (strlen((char *)jogador) == 0) {
           menu = '3';
-          printf(" Voce não tem jogadoradores cadastrados, indo pra tela de criação\n");
+          printf(" Voce não tem jogadores cadastrados, indo pra tela de criação\n");
           getchar();
           printf(" ------------------------------------------\n");
           continue;
         }
 
         cartela = Cartela(0);
+        populeCartela(cartela);
         mostreCartela((const char**)cartela);
+
         printf(" \n");
         printf(" s - Salvar cartelaela\n");
         printf(" n - Descartelaar cartela\n");
@@ -77,21 +68,10 @@ int main(int argc, char *argv[])
           salveCartela(ocartelaf, (const byte **)cartela, (char *)jogador);
           fclose(ocartelaf);
           continue;
-        } else if (in == 'n') {
-          menu = '0';
         } else {
-          i = 'a'-1;
-          fseek(ijogadorf, 0, SEEK_SET);
-          while (fgets((char *)jogador, 20, ijogadorf))
-            if (jogador[0] != '\n')
-              if (++i == in) break;
-
-          if (in != i) {
-            printf(" erro ao selecionar jogadorador");
-          }
+          menu = in;
+          continue;
         }
-
-        action = 1;
         break;
       case '2':
         printf(" BINGO - Cartelas cadastradas\n");
@@ -111,13 +91,13 @@ int main(int argc, char *argv[])
         if (i == 'a'-1)
           printf(" Não há cartelas registrados\n");
         printf(" 0 - Voltar ao menu principal\n");
-        printf(" q - Sair do jogadoro\n");
+        printf(" q - Sair do jogador\n");
         printf(" ------------------------------------------\n");
         printf("\n");
         printf(":");
         break;
       case '3':
-        printf(" BINGO - jogadoradores\n");
+        printf(" BINGO - jogadores\n");
         printf(" ------------------------------------------\n");
 
         i = 'a'-1;
@@ -127,10 +107,10 @@ int main(int argc, char *argv[])
             printf(" %c - %s\n", ++i, jogador);
 
         if (i == 'a'-1)
-          printf(" Não há jogadoradores registrados\n");
+          printf(" Não há jogadores registrados\n");
 
-        printf(" > Escolha um para criar uma cartelaela\n\n");
-        printf(" s - Criar jogadorador\n");
+        printf(" > Escolha um para criar uma cartela\n\n");
+        printf(" s - Criar jogador\n");
         printf(" 0 - Voltar ao menu principal\n");
         printf(" q - Sair do jogadoro\n");
         printf(" ------------------------------------------\n");
@@ -144,7 +124,7 @@ int main(int argc, char *argv[])
 
         if (in == 's') {
           fseek(ojogadorf, 0, SEEK_END);
-          printf("Digite o nome do jogadorador:");
+          printf("Digite o nome do jogador:");
           scanf("%s", jogador);
           fputs((const char *)jogador, ojogadorf);
           fputc('\n', ojogadorf);
@@ -159,7 +139,7 @@ int main(int argc, char *argv[])
                 break;
 
           if (i == in) {
-            printf("Usando jogadorador: %s\n", jogador);
+            printf("Usando jogador: %s\n", jogador);
             getchar();
             menu = '1';
             continue;
@@ -169,7 +149,9 @@ int main(int argc, char *argv[])
         action = 1;
         break;
       case '4':
-        in = Bingo();
+        in = iniciarBingo();
+        if (in) menu = in;
+        action = 1;
         break;
     }
 
@@ -194,4 +176,17 @@ int main(int argc, char *argv[])
     fclose(ojogadorf);
   }
   return 0;
+}
+
+void menuPrincipal() {
+  printf(" BINGO - Menu Principal\n");
+  printf(" ------------------------------------------\n");
+  printf(" 1 - Criar cartelaelas\n");
+  printf(" 2 - Ver cartelaelas\n");
+  printf(" 3 - Atribuir cartelaelas\n");
+  printf(" 4 - jogadorar Bingo!\n");
+  printf(" q - Sair do jogadoro\n");
+  printf(" ------------------------------------------\n");
+  printf(" \n");
+  printf(":");
 }

@@ -50,7 +50,7 @@ byte * Jogador() {
   return c;
 }
 
-void popule(byte ** c) {
+void populeCartela(byte ** c) {
   time_t now;
   localtime(&now);
   srand(time(&now));
@@ -85,13 +85,16 @@ void mostreCartela(const char ** cartela) {
       printf(" %02c  ", bingo[j]);
   puts("");
 
+  byte c[5][5];
+  memcpy(c, cartela, 25);
+
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 5; j++) {
       if (j == 0) {
         printf(" %i |", i+1);
       }
 
-      byte value = cartela[i][j];
+      byte value = c[i][j];
       printf(" %02i |", value);
 
       if (!((j+1)%5))
@@ -135,7 +138,7 @@ void mostreLinha() {
 }
 
 int carts = 25+sizeof(int)*2;
-byte Bingo(void) {
+byte iniciarBingo(void) {
   byte in = 0;
   char historico[99];
   memset(historico, 0, 99);
@@ -150,6 +153,8 @@ byte Bingo(void) {
 
   int start = 0;
   while (in != 'q') {
+    system("clear");
+
     printf(" BINGO - Game\n");
     printf(" ------------------------------------------\n");
 
@@ -186,23 +191,29 @@ byte Bingo(void) {
       if (equal_count == 25) {
         printf(" BINGOOO!! o jogador %s ganhou com a cartela: \n", jog);
         mostreCartela((const char **)cart);
+        fputc(':', logfile);
+        salveCartela(logfile, (const byte**)cart, (char *)jog);
         fputc('\n', logfile);
-        break;
+
+        printf("Enter - menu principal");
+        getchar();
+
+        fclose(logfile);
+        return '0';
       }
 
       value = 0;
 
       start++;
 
-      printf(" qualquer tecla - Sortea nova bola\n");
+      printf(" Enter - Sortea nova bola\n");
+      printf(" 0 - Voltar ao menu principal (descarta partida)\n");
       printf(" q - Sair do jogo\n");
       printf(" ------------------------------------------\n");
       printf(" \n");
       printf(":");
       in = getchar();
-      printf("%c:", in);
-      if (in == 'q') break;
-
+      if (in == 'q') return 'q';
     }
 
     while (strchr((const char*)historico, value))
@@ -214,7 +225,5 @@ byte Bingo(void) {
   fputc('\n', logfile);
   fclose(logfile);
   fclose(cartf);
-
-  puts("Joao");
-  return '0';
+  return 'q';
 }

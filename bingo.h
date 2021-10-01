@@ -19,14 +19,15 @@ int salveCartela(
 
 void mostreTitulo(const char * title);
 void mostreCartela(const char ** cartela);
+void populeCartela(byte ** c);
+
 void mostreLinha();
 
 byte sorteie(char inicio, char limite);
-void popule(byte ** c);
 
 void ordene(byte * vet, byte n);
 
 byte ** Cartela();
 byte * Jogador();
 
-byte Bingo(void);
+byte iniciarBingo(void);
