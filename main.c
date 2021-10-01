@@ -2,43 +2,30 @@
 #include <stdlib.h>
 #include "cartela.h"
 
+uchar ** cur_cart;
+
+uchar cur_jog[GAMER_NAME_SIZE];
+uchar jog[GAMER_NAME_SIZE];
 uchar bol_history[99];
-void InitGame() {
-  memset(bol_history, 0, 99);
 
-  uchar in = 0;
+FILE * ijogf;
+FILE * icartf;
+FILE * ocartf;
+FILE * ojogf;
 
-  while (in != 'q') {
-    uchar bola = Randchar(1, 99);
-    
-
-    in = getchar();
-  }
-}
+int i;
+uchar in, menu = '0', last_menu = '0';
 
 int main(int argc, char *argv[])
 {
-  FILE * ocartf = fopen("carts.bin", "wb");
-  FILE * ojogf = fopen("jogs.txt", "wb");
-  FILE * ijogf;
-  FILE * icartf;
-  FILE * link;
-  FILE * ilink;
-
-  int i;
-  uchar ** cur_cart = Cartela(1);
-  uchar cur_jog[GAMER_NAME_SIZE];
-  uchar jog[GAMER_NAME_SIZE];
   memset(cur_jog, 0, GAMER_NAME_SIZE);
   memset(jog, 0, GAMER_NAME_SIZE);
 
-  uchar in;
+  ocartf = fopen("carts.bin", "wb");
+  ojogf = fopen("jogs.txt", "wb");
+  cur_cart = Cartela(1);
 
-  uchar menu = '0', last_menu = '0';
-  char jog_sel;
   while (in != 'q') {
-    link = fopen("jogcart.bin", "ab");
-    ilink = fopen("jogcart.bin", "rb");
     ocartf = fopen("carts.bin", "ab");
     icartf = fopen("carts.bin", "rb");
     ojogf = fopen("jogs.txt", "ab");
@@ -124,8 +111,6 @@ int main(int argc, char *argv[])
         printf(":");
         break;
       case '4':
-        InitGame();
-        break;
         break;
     }
 
@@ -172,7 +157,6 @@ int main(int argc, char *argv[])
             if (in != i) {
               printf(" erro ao selecionar jogador");
             } else {
-              jog_sel = i;
               menu = '5';
             }
             break;
@@ -196,11 +180,9 @@ int main(int argc, char *argv[])
 
     fclose(icartf);
     fclose(ijogf);
-    fclose(ilink);
 
     fclose(ocartf);
     fclose(ojogf);
-    fclose(link);
   }
   return 0;
 }
