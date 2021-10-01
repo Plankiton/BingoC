@@ -24,12 +24,16 @@ int main(int argc, char *argv[])
   ojogadorf = fopen("jogadors.txt", "wb");
   cartela = Cartela(1);
 
+  byte action = 0;
   while (in != 'q') {
+    action = 0;
     system("clear");
+
     ocartelaf = fopen("carts.bin", "ab");
     icartelaf = fopen("carts.bin", "rb");
     ojogadorf = fopen("jogadors.txt", "ab");
     ijogadorf = fopen("jogadors.txt", "rb");
+
 
     switch (menu) {
       case '0':
@@ -69,11 +73,13 @@ int main(int argc, char *argv[])
         in = getchar();
         if (in == '\0' || in == '\n') continue;
 
-        if (in == 's')
+        if (in == 's') {
           salveCartela(ocartelaf, (const byte **)cartela, (char *)jogador);
-        else if (in == 'n')
+          fclose(ocartelaf);
+          continue;
+        } else if (in == 'n') {
           menu = '0';
-        else {
+        } else {
           i = 'a'-1;
           fseek(ijogadorf, 0, SEEK_SET);
           while (fgets((char *)jogador, 20, ijogadorf))
@@ -85,6 +91,7 @@ int main(int argc, char *argv[])
           }
         }
 
+        action = 1;
         break;
       case '2':
         printf(" BINGO - Cartelas cadastradas\n");
@@ -102,7 +109,7 @@ int main(int argc, char *argv[])
         }
 
         if (i == 'a'-1)
-          printf(" Não há cartelaelas registrados\n");
+          printf(" Não há cartelas registrados\n");
         printf(" 0 - Voltar ao menu principal\n");
         printf(" q - Sair do jogadoro\n");
         printf(" ------------------------------------------\n");
@@ -136,14 +143,14 @@ int main(int argc, char *argv[])
         in = getchar();
 
         if (in == 's') {
+          fseek(ojogadorf, 0, SEEK_END);
           printf("Digite o nome do jogadorador:");
           scanf("%s", jogador);
           fputs((const char *)jogador, ojogadorf);
           fputc('\n', ojogadorf);
-        }
-        else if (in == 'n')
-          menu = '0';
-        else {
+          fclose(ojogadorf);
+          continue;
+        } else {
           i = 'a'-1;
           fseek(ijogadorf, 0, SEEK_SET);
           while (fgets((char *)jogador, 20, ijogadorf)) 
@@ -151,18 +158,22 @@ int main(int argc, char *argv[])
               if (++i == in)
                 break;
 
-          printf(" ------------------------------------------\n");
-          printf("Usando jogadorador %s\n", jogador);
-          getchar();
-          printf(" ------------------------------------------\n");
-          menu = '1';
+          if (i == in) {
+            printf("Usando jogadorador: %s\n", jogador);
+            getchar();
+            menu = '1';
+            continue;
+          }
         }
 
+        action = 1;
         break;
       case '4':
         in = Bingo();
         break;
     }
+
+    if (action) continue;
 
     in = getchar();
     if (in == '\0' || in == '\n') continue;
@@ -179,7 +190,6 @@ int main(int argc, char *argv[])
 
     fclose(icartelaf);
     fclose(ijogadorf);
-
     fclose(ocartelaf);
     fclose(ojogadorf);
   }
