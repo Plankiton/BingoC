@@ -2,6 +2,19 @@
 #include <stdlib.h>
 #include "cartela.h"
 
+uchar bol_history[99];
+void InitGame() {
+  memset(bol_history, 0, 99);
+
+  uchar in = 0;
+
+  while (in != 'q') {
+    uchar bola = Randchar(1, 99);
+    
+
+    in = getchar();
+  }
+}
 
 int main(int argc, char *argv[])
 {
@@ -26,14 +39,14 @@ int main(int argc, char *argv[])
   while (in != 'q') {
     link = fopen("jogcart.bin", "ab");
     ilink = fopen("jogcart.bin", "rb");
+    ocartf = fopen("carts.bin", "ab");
     icartf = fopen("carts.bin", "rb");
     ojogf = fopen("jogs.txt", "ab");
     ijogf = fopen("jogs.txt", "rb");
 
-    printf("\n\n");
     switch (menu) {
       case '0':
-        printf(" BINGO\n");
+        printf(" BINGO - Menu Principal\n");
         printf(" ------------------------------------------\n");
         printf(" 1 - Criar cartelas\n");
         printf(" 2 - Ver cartelas\n");
@@ -45,12 +58,16 @@ int main(int argc, char *argv[])
         printf(":");
         break;
       case '1':
+        printf(" BINGO - Criação de cartela\n");
+        printf(" ------------------------------------------\n");
         if (strlen(cur_jog) == 0) {
           menu = '3';
+          printf(" Voce não tem jogadores cadastrados, indo pra tela de criação\n");
+          getchar();
+          printf(" ------------------------------------------\n");
           continue;
         }
 
-        printf(" ------------------------------------------\n");
         cur_cart = Cartela(0);
         PrintCartela(cur_cart);
         printf(" \n");
@@ -63,33 +80,8 @@ int main(int argc, char *argv[])
         printf(":");
         break;
       case '2':
-        menu = '5';
-        continue;
-        break;
-      case '3':
+        printf(" BINGO - Cartelas cadastradas\n");
         printf(" ------------------------------------------\n");
-
-        i = 'a'-1;
-        fseek(ijogf, 0, SEEK_SET);
-        while (fgets(cur_jog, GAMER_NAME_SIZE, ijogf))
-          if (cur_jog[0] != '\n')
-            printf(" %c - %s\n", ++i, cur_jog);
-
-        if (i == 'a'-1)
-          printf(" Não há jogadores registrados\n");
-
-        printf(" s - Criar jogador\n");
-        printf(" 0 - Voltar ao menu principal\n");
-        printf(" q - Sair do jogo\n");
-        printf(" ------------------------------------------\n");
-        printf(" \n");
-        printf(":");
-        break;
-      case '4':
-        break;
-      case '5':
-        printf(" ------------------------------------------\n");
-
         i = 'a'-1;
         fseek(icartf, 0, SEEK_END);
         int cartsize = ftell(icartf);
@@ -106,11 +98,34 @@ int main(int argc, char *argv[])
           printf(" Não há cartelas registrados\n");
         printf(" 0 - Voltar ao menu principal\n");
         printf(" q - Sair do jogo\n");
-        if (last_menu != '2')
-          printf(" ! Se a cartela já possuir jogador, esta ação não afetará em nada");
         printf(" ------------------------------------------\n");
         printf("\n");
         printf(":");
+        break;
+      case '3':
+        printf(" BINGO - Jogadores\n");
+        printf(" ------------------------------------------\n");
+
+        i = 'a'-1;
+        fseek(ijogf, 0, SEEK_SET);
+        while (fgets(cur_jog, GAMER_NAME_SIZE, ijogf))
+          if (cur_jog[0] != '\n')
+            printf(" %c - %s\n", ++i, cur_jog);
+
+        if (i == 'a'-1)
+          printf(" Não há jogadores registrados\n");
+
+        printf(" > Escolha um para criar uma cartela");
+        printf(" s - Criar jogador\n");
+        printf(" 0 - Voltar ao menu principal\n");
+        printf(" q - Sair do jogo\n");
+        printf(" ------------------------------------------\n");
+        printf(" \n");
+        printf(":");
+        break;
+      case '4':
+        InitGame();
+        break;
         break;
     }
 
@@ -121,16 +136,18 @@ int main(int argc, char *argv[])
       case 's':
         switch (menu) {
           case '1':
-            ocartf = fopen("carts.bin", "ab");
             saveCartela(ocartf, cur_jog, cur_cart, 0);
-            fclose(ocartf);
+
+            memset(cur_jog, 0, GAMER_NAME_SIZE);
+            memset(jog, 0, GAMER_NAME_SIZE);
             break;
           case '3':
+            memset(cur_jog, 0, GAMER_NAME_SIZE);
+            memset(jog, 0, GAMER_NAME_SIZE);
             printf("Digite o nome do jogador:");
             scanf("%s", cur_jog);
             fputs((const char *)cur_jog, ojogf);
             fputc('\n', ojogf);
-            puts(cur_jog);
             break;
         }
         break;
@@ -160,8 +177,17 @@ int main(int argc, char *argv[])
             }
             break;
           case '3':
-            printf("Usando Usuário %s\n", cur_jog);
+            i = 'a'-1;
+            fseek(ijogf, 0, SEEK_SET);
+            while (fgets(cur_jog, GAMER_NAME_SIZE, ijogf)) 
+              if (cur_jog[0] != '\n')
+                if (++i == in)
+                  break;
+
+            printf(" ------------------------------------------\n");
+            printf("Usando jogador %s\n", cur_jog);
             getchar();
+            printf(" ------------------------------------------\n");
             menu = '1';
             break;
         }
@@ -169,10 +195,12 @@ int main(int argc, char *argv[])
     last_menu = menu;
 
     fclose(icartf);
-    fclose(ojogf);
     fclose(ijogf);
-    fclose(link);
     fclose(ilink);
+
+    fclose(ocartf);
+    fclose(ojogf);
+    fclose(link);
   }
   return 0;
 }

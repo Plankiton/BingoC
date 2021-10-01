@@ -112,7 +112,6 @@ int saveCartela(FILE * file, const char * jogador, const uchar ** cartela, int o
   }
 
   fwrite(cartela, 5, 5, file);
-  fputc('\n', file);
   return ftell(file) - (5*5 + GAMER_NAME_SIZE);
 }
 
