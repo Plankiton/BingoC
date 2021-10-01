@@ -1,115 +1,163 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "cartela.h"
+#include "bingo.h"
 
-uchar ** cur_cart;
 
-uchar cur_jog[GAMER_NAME_SIZE];
-uchar jog[GAMER_NAME_SIZE];
-uchar bol_history[99];
-
-FILE * ijogf;
-FILE * icartf;
-FILE * ocartf;
-FILE * ojogf;
+FILE * ijogadorf,
+  * icartelaf,
+  * ocartelaf,
+  * ojogadorf;
 
 int i;
-uchar in, menu = '0', last_menu = '0';
+byte in,
+  menu = '0',
+  last_menu = '0',
+  ** cartela,
+  jogador[20],
+  jogador[20],
+  bol_history[99];
 
 int main(int argc, char *argv[])
 {
-  memset(cur_jog, 0, GAMER_NAME_SIZE);
-  memset(jog, 0, GAMER_NAME_SIZE);
 
-  ocartf = fopen("carts.bin", "wb");
-  ojogf = fopen("jogs.txt", "wb");
-  cur_cart = Cartela(1);
+  ocartelaf = fopen("carts.bin", "wb");
+  ojogadorf = fopen("jogadors.txt", "wb");
+  cartela = Cartela(1);
 
   while (in != 'q') {
     system("clear");
-    ocartf = fopen("carts.bin", "ab");
-    icartf = fopen("carts.bin", "rb");
-    ojogf = fopen("jogs.txt", "ab");
-    ijogf = fopen("jogs.txt", "rb");
+    ocartelaf = fopen("carts.bin", "ab");
+    icartelaf = fopen("carts.bin", "rb");
+    ojogadorf = fopen("jogadors.txt", "ab");
+    ijogadorf = fopen("jogadors.txt", "rb");
 
     switch (menu) {
       case '0':
         printf(" BINGO - Menu Principal\n");
         printf(" ------------------------------------------\n");
-        printf(" 1 - Criar cartelas\n");
-        printf(" 2 - Ver cartelas\n");
-        printf(" 3 - Atribuir cartelas\n");
-        printf(" 4 - Jogar Bingo!\n");
-        printf(" q - Sair do jogo\n");
+        printf(" 1 - Criar cartelaelas\n");
+        printf(" 2 - Ver cartelaelas\n");
+        printf(" 3 - Atribuir cartelaelas\n");
+        printf(" 4 - jogadorar Bingo!\n");
+        printf(" q - Sair do jogadoro\n");
         printf(" ------------------------------------------\n");
         printf(" \n");
         printf(":");
         break;
       case '1':
-        printf(" BINGO - Criação de cartela\n");
+        printf(" BINGO - Criação de cartelaela\n");
         printf(" ------------------------------------------\n");
-        if (strlen(cur_jog) == 0) {
+        if (strlen(jogador) == 0) {
           menu = '3';
-          printf(" Voce não tem jogadores cadastrados, indo pra tela de criação\n");
+          printf(" Voce não tem jogadoradores cadastrados, indo pra tela de criação\n");
           getchar();
           printf(" ------------------------------------------\n");
           continue;
         }
 
-        cur_cart = Cartela(0);
-        PrintCartela(cur_cart);
+        cartela = Cartela(0);
+        PrintCartela(cartela);
         printf(" \n");
-        printf(" s - Salvar cartela\n");
-        printf(" n - Descartar cartela\n");
+        printf(" s - Salvar cartelaela\n");
+        printf(" n - Descartelaar cartela\n");
         printf(" 0 - Voltar ao menu principal\n");
-        printf(" q - Sair do jogo\n");
+        printf(" q - Sair do jogadoro\n");
         printf(" ------------------------------------------\n");
         printf(" \n");
         printf(":");
+
+        in = getchar();
+        if (in == '\0' || in == '\n') continue;
+
+        if (in == 's')
+          salveCartela(ocartelaf, jogador, cur_cart, 0);
+        else if (in = 'n')
+          menu = '0';
+        else {
+          i = 'a'-1;
+          fseek(ijogadorf, 0, SEEK_SET);
+          while (fgets(jogador, 20, ijogadorf))
+            if (jogador[0] != '\n')
+              if (++i == in) break;
+
+          if (in != i) {
+            printf(" erro ao selecionar jogadorador");
+          }
+        }
+
         break;
       case '2':
         printf(" BINGO - Cartelas cadastradas\n");
         printf(" ------------------------------------------\n");
         i = 'a'-1;
-        fseek(icartf, 0, SEEK_END);
-        int cartsize = ftell(icartf);
+        fseek(icartelaf, 0, SEEK_END);
+        int cartelasize = ftell(icartf);
 
-        fseek(icartf, 0, SEEK_SET);
+        fseek(icartelaf, 0, SEEK_SET);
         int l = 0;
-        while ((l = openCartela(icartf, jog, cur_cart)) && l+(25+GAMER_NAME_SIZE) <= cartsize) {
-          printf(" %c %s \n", ++i, jog);
-          PrintCartela(cur_cart);
+        while ((l = abreCartela(icartelaf, jogador, cart)) && l+(25+20) <= cartsize) {
+          printf(" %c %s \n", ++i, jogador);
+          PrintCartela(cartela);
           printf("\n");
         }
 
         if (i == 'a'-1)
-          printf(" Não há cartelas registrados\n");
+          printf(" Não há cartelaelas registrados\n");
         printf(" 0 - Voltar ao menu principal\n");
-        printf(" q - Sair do jogo\n");
+        printf(" q - Sair do jogadoro\n");
         printf(" ------------------------------------------\n");
         printf("\n");
         printf(":");
         break;
       case '3':
-        printf(" BINGO - Jogadores\n");
+        printf(" BINGO - jogadoradores\n");
         printf(" ------------------------------------------\n");
 
         i = 'a'-1;
-        fseek(ijogf, 0, SEEK_SET);
-        while (fgets(cur_jog, GAMER_NAME_SIZE, ijogf))
-          if (cur_jog[0] != '\n')
-            printf(" %c - %s\n", ++i, cur_jog);
+        fseek(ijogadorf, 0, SEEK_SET);
+        while (fgets(jogador, 20, ijogadorf))
+          if (jogador[0] != '\n')
+            printf(" %c - %s\n", ++i, jogador);
 
         if (i == 'a'-1)
-          printf(" Não há jogadores registrados\n");
+          printf(" Não há jogadoradores registrados\n");
 
-        printf(" > Escolha um para criar uma cartela\n\n");
-        printf(" s - Criar jogador\n");
+        printf(" > Escolha um para criar uma cartelaela\n\n");
+        printf(" s - Criar jogadorador\n");
         printf(" 0 - Voltar ao menu principal\n");
-        printf(" q - Sair do jogo\n");
+        printf(" q - Sair do jogadoro\n");
         printf(" ------------------------------------------\n");
         printf(" \n");
         printf(":");
+
+        memset(jogador, 0, 20);
+        memset(jogador, 0, 20);
+
+        in = getchar();
+
+        if (in == 's') {
+          printf("Digite o nome do jogadorador:");
+          scanf("%s", jogador);
+          fputs((const char *)jogador, ojogadorf);
+          fputc('\n', ojogadorf);
+        }
+        else if (in = 'n')
+          menu = '0';
+        else {
+          i = 'a'-1;
+          fseek(ijogadorf, 0, SEEK_SET);
+          while (fgets(jogador, 20, ijogadorf)) 
+            if (jogador[0] != '\n')
+              if (++i == in)
+                break;
+
+          printf(" ------------------------------------------\n");
+          printf("Usando jogadorador %s\n", jogador);
+          getchar();
+          printf(" ------------------------------------------\n");
+          menu = '1';
+        }
+
         break;
       case '4':
         in = Bingo();
@@ -120,27 +168,6 @@ int main(int argc, char *argv[])
     if (in == '\0' || in == '\n') continue;
 
     switch (in) {
-      case 's':
-        switch (menu) {
-          case '1':
-            saveCartela(ocartf, cur_jog, cur_cart, 0);
-
-            memset(cur_jog, 0, GAMER_NAME_SIZE);
-            memset(jog, 0, GAMER_NAME_SIZE);
-            break;
-          case '3':
-            memset(cur_jog, 0, GAMER_NAME_SIZE);
-            memset(jog, 0, GAMER_NAME_SIZE);
-            printf("Digite o nome do jogador:");
-            scanf("%s", cur_jog);
-            fputs((const char *)cur_jog, ojogf);
-            fputc('\n', ojogf);
-            break;
-        }
-        break;
-
-      case 'n':
-        break;
       case '0':
       case '1':
       case '2':
@@ -148,43 +175,15 @@ int main(int argc, char *argv[])
       case '4':
         menu = in;
         break;
-      default:
-        switch (menu) {
-          case '1':
-            i = 'a'-1;
-            fseek(ijogf, 0, SEEK_SET);
-            while (fgets(cur_jog, GAMER_NAME_SIZE, ijogf))
-              if (cur_jog[0] != '\n')
-                if (++i == in) break;
-            if (in != i) {
-              printf(" erro ao selecionar jogador");
-            } else {
-              menu = '5';
-            }
-            break;
-          case '3':
-            i = 'a'-1;
-            fseek(ijogf, 0, SEEK_SET);
-            while (fgets(cur_jog, GAMER_NAME_SIZE, ijogf)) 
-              if (cur_jog[0] != '\n')
-                if (++i == in)
-                  break;
-
-            printf(" ------------------------------------------\n");
-            printf("Usando jogador %s\n", cur_jog);
-            getchar();
-            printf(" ------------------------------------------\n");
-            menu = '1';
-            break;
-        }
     }
+
     last_menu = menu;
 
-    fclose(icartf);
-    fclose(ijogf);
+    fclose(icartelaf);
+    fclose(ijogadorf);
 
-    fclose(ocartf);
-    fclose(ojogf);
+    fclose(ocartelaf);
+    fclose(ojogadorf);
   }
   return 0;
 }

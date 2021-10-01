@@ -105,11 +105,14 @@ void mostreCartela(const char ** cartela) {
 int salveCartela(
  FILE * file,
  const byte ** cartela,
- const int jogador_id,
- const int cart_id 
+ const char * jogador_id
 ) {
-  fwrite(&jogador_id, sizeof(int), 1, file);
-  fwrite(&cart_id, sizeof(int), 1, file);
+  int jog_size = strlen(jogador_id);
+
+  fwrite(jogador_id, jog_size, 1, file);
+  for (int i = jog_size; i < 20; i++) {
+    fputc(0, file);
+  }
   fwrite(cartela, 5, 5, file);
   return ftell(file);
 }
@@ -117,22 +120,104 @@ int salveCartela(
 int abraCartela(
  FILE * file,
  const byte ** cartela,
- const int jogador_id,
- const int cart_id 
+ const char * jogador_id
 ) {
-  fread(&jogador_id, sizeof(int), 1, file);
-  fread(&cart_id, sizeof(int), 1, file);
+  fread(jogador_id, 20, 1, file);
   fread(cartela, 5, 5, file);
   return ftell(file);
 }
 
-void mostreTitulo(
-    const char * title,
-) {
+void mostreTitulo(const char * title) {
   printf(" %010s | %010s\n", "BINGO", title);
   mostreLinha();
 }
 
 void mostreLinha() {
   puts  (" -----------------------");
+}
+
+int carts = 25+sizeof(int)*2;
+byte Bingo() {
+  byte in = 0;
+  byte historico[99];
+  memset(historico, 0, 99);
+
+  byte value = 0;
+
+  FILE * logfile = fopen("partidas.txt", "ab");
+  if (!logfile) logfile = fopen("partidas.txt", "wb");
+  fseek(logfile, 0, SEEK_END);
+
+  FILE * cartf = fopen("carts.bin", "rb");
+
+  int start = 0;
+  while (in != 'q') {
+    printf(" BINGO - Game\n");
+    printf(" ------------------------------------------\n");
+
+    if (value) {
+      printf(" A bola sorteada foi %i\n", value);
+      fputc(value, logfile);
+
+      int cart_count = 0, equal_count = 0;
+
+      byte ** cart = Cartela(1);
+      byte jog[20];
+      {
+        int l = 0;
+        int i = 'a'-1;
+        fseek(cartf, 0, SEEK_END);
+        int cartsize = ftell(cartf);
+        fseek(cartf, 0, SEEK_SET);
+
+        while ((l = abreCartela(cartf, jog, cart)) && l+(25+20) <= cartsize) {
+          const char * c = (const char *)*cart;
+          if (strchr(c, value)) cart_count ++;
+
+          equal_count = 0;
+          fseek(logfile, start, SEEK_SET);
+          for (int i = 0; i < 25; i++) {
+            byte round = fgetc(logfile);
+            if (strchr(c, round)) equal_count ++;
+          }
+
+          if (equal_count == 25) break;
+        }
+      }
+      if (cart_count)
+        printf(" Ela está em pelo menos %i cartelas \n", cart_count);
+      if (equal_count == 25) {
+        printf(" BINGOOO!! o jogador %s ganhou com a cartela: \n", jog);
+        mostreCartela(cart);
+        fputc('\n', logfile);
+        break;
+      }
+
+      value = 0;
+
+      start++;
+
+      printf(" qualquer tecla - Sortea nova bola\n");
+      printf(" q - Sair do jogo\n");
+      printf(" ------------------------------------------\n");
+      printf(" \n");
+      printf(":");
+      in = getchar();
+      printf("%c:", in);
+      if (in == 'q') break;
+
+    }
+
+    while (strchr((const char*)historico, value))
+      value = Randchar(1, 99);
+
+    historico[strlen(historico)-1] = value;
+  }
+
+  fputc('\n', logfile);
+  fclose(logfile);
+  fclose(cartf);
+
+  puts("Joao");
+  return '0';
 }
