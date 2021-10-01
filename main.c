@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bingo.h"
 
 
@@ -11,7 +12,6 @@ FILE * ijogadorf,
 int i;
 byte in,
   menu = '0',
-  last_menu = '0',
   ** cartela,
   jogador[20],
   jogador[20],
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
       case '1':
         printf(" BINGO - Criação de cartelaela\n");
         printf(" ------------------------------------------\n");
-        if (strlen(jogador) == 0) {
+        if (strlen((char *)jogador) == 0) {
           menu = '3';
           printf(" Voce não tem jogadoradores cadastrados, indo pra tela de criação\n");
           getchar();
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
         }
 
         cartela = Cartela(0);
-        PrintCartela(cartela);
+        mostreCartela((const char**)cartela);
         printf(" \n");
         printf(" s - Salvar cartelaela\n");
         printf(" n - Descartelaar cartela\n");
@@ -70,13 +70,13 @@ int main(int argc, char *argv[])
         if (in == '\0' || in == '\n') continue;
 
         if (in == 's')
-          salveCartela(ocartelaf, jogador, cur_cart, 0);
-        else if (in = 'n')
+          salveCartela(ocartelaf, (const byte **)cartela, (char *)jogador);
+        else if (in == 'n')
           menu = '0';
         else {
           i = 'a'-1;
           fseek(ijogadorf, 0, SEEK_SET);
-          while (fgets(jogador, 20, ijogadorf))
+          while (fgets((char *)jogador, 20, ijogadorf))
             if (jogador[0] != '\n')
               if (++i == in) break;
 
@@ -91,13 +91,13 @@ int main(int argc, char *argv[])
         printf(" ------------------------------------------\n");
         i = 'a'-1;
         fseek(icartelaf, 0, SEEK_END);
-        int cartelasize = ftell(icartf);
+        int cartelasize = ftell(icartelaf);
 
         fseek(icartelaf, 0, SEEK_SET);
         int l = 0;
-        while ((l = abreCartela(icartelaf, jogador, cart)) && l+(25+20) <= cartsize) {
+        while ((l = abraCartela(icartelaf, (const byte **)cartela, (char *)jogador)) && l+(25+20) <= cartelasize) {
           printf(" %c %s \n", ++i, jogador);
-          PrintCartela(cartela);
+          mostreCartela((const char **)cartela);
           printf("\n");
         }
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 
         i = 'a'-1;
         fseek(ijogadorf, 0, SEEK_SET);
-        while (fgets(jogador, 20, ijogadorf))
+        while (fgets((char *)jogador, 20, ijogadorf))
           if (jogador[0] != '\n')
             printf(" %c - %s\n", ++i, jogador);
 
@@ -141,12 +141,12 @@ int main(int argc, char *argv[])
           fputs((const char *)jogador, ojogadorf);
           fputc('\n', ojogadorf);
         }
-        else if (in = 'n')
+        else if (in == 'n')
           menu = '0';
         else {
           i = 'a'-1;
           fseek(ijogadorf, 0, SEEK_SET);
-          while (fgets(jogador, 20, ijogadorf)) 
+          while (fgets((char *)jogador, 20, ijogadorf)) 
             if (jogador[0] != '\n')
               if (++i == in)
                 break;
@@ -176,8 +176,6 @@ int main(int argc, char *argv[])
         menu = in;
         break;
     }
-
-    last_menu = menu;
 
     fclose(icartelaf);
     fclose(ijogadorf);
