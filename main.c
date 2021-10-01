@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   cur_cart = Cartela(1);
 
   while (in != 'q') {
+    system("clear");
     ocartf = fopen("carts.bin", "ab");
     icartf = fopen("carts.bin", "rb");
     ojogf = fopen("jogs.txt", "ab");
@@ -102,7 +103,7 @@ int main(int argc, char *argv[])
         if (i == 'a'-1)
           printf(" Não há jogadores registrados\n");
 
-        printf(" > Escolha um para criar uma cartela");
+        printf(" > Escolha um para criar uma cartela\n\n");
         printf(" s - Criar jogador\n");
         printf(" 0 - Voltar ao menu principal\n");
         printf(" q - Sair do jogo\n");
@@ -111,6 +112,7 @@ int main(int argc, char *argv[])
         printf(":");
         break;
       case '4':
+        in = Bingo();
         break;
     }
 
