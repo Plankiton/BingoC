@@ -1,90 +1,138 @@
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
-#include "cartela.h"
+#include <time.h>
+
 #include "bingo.h"
 
-uchar Bingo() {
-  uchar in = 0;
-  uchar historico[99];
-  memset(historico, 0, 99);
+const char * bingo = "BINGO";
+const int bingo_range[5][2] = {
+  { 1, 19}, // B
+  {20, 39}, // I
+  {40, 59}, // N
+  {60, 79}, // G
+  {80, 99}, // O
+};
 
-  uchar value = 0;
+void troque(byte * a, byte * b) {
+    byte temp = *a;
+    *a = *b;
+    *b = temp;
+}
 
-  FILE * logfile = fopen("partidas.txt", "ab");
-  if (!logfile) logfile = fopen("partidas.txt", "wb");
-  fseek(logfile, 0, SEEK_END);
+void ordene(byte * vet, byte n) {
+    byte i, j, min;
 
-  FILE * cartf = fopen("carts.bin", "rb");
+    byte v[n];
+    memcpy(v, vet, n);
 
-  int start = 0;
-  while (in != 'q') {
-    printf(" BINGO - Game\n");
-    printf(" ------------------------------------------\n");
+    for (i = 0; i < n - 1; i++) {
+        min = i;
+        for (j = i + 1; j < n; j++)
+            if (v[j] < v[min])
+                min = j;
 
-    if (value) {
-      printf(" A bola sorteada foi %i\n", value);
-      fputc(value, logfile);
-
-      int cart_count = 0, equal_count = 0;
-
-      uchar ** cart = Cartela(1);
-      uchar jog[GAMER_NAME_SIZE];
-      {
-        int l = 0;
-        int i = 'a'-1;
-        fseek(cartf, 0, SEEK_END);
-        int cartsize = ftell(cartf);
-        fseek(cartf, 0, SEEK_SET);
-
-        while ((l = openCartela(cartf, jog, cart)) && l+(25+GAMER_NAME_SIZE) <= cartsize) {
-          const char * c = (const char *)*cart;
-          if (strchr(c, value)) cart_count ++;
-
-          equal_count = 0;
-          fseek(logfile, start, SEEK_SET);
-          for (int i = 0; i < 25; i++) {
-            uchar lfc = fgetc(logfile);
-            if (strchr(c, lfc)) equal_count ++;
-          }
-
-          if (equal_count == 25) break;
-        }
-      }
-      if (cart_count)
-        printf(" Ela está em pelo menos %i cartelas \n", cart_count);
-      if (equal_count == 25) {
-        printf(" BINGOOO!! o jogador %s ganhou com a cartela: \n", jog);
-        PrintCartela(cart);
-        fputc('\n', logfile);
-        break;
-      }
-
-      value = 0;
-
-      start++;
-
-      printf(" qualquer tecla - Sortea nova bola\n");
-      printf(" q - Sair do jogo\n");
-      printf(" ------------------------------------------\n");
-      printf(" \n");
-      printf(":");
-      in = getchar();
-      printf("%c:", in);
-      if (in == 'q') break;
-
+        troque(&v[min], &v[i]);
     }
 
-    while (strchr((const char*)historico, value))
-      value = Randchar(1, 99);
+    memcpy(vet, v, n);
+}
 
-    historico[strlen(historico)-1] = value;
+byte ** Cartela() {
+  byte ** c = (byte**) malloc(25 * (sizeof (char)));
+  memset(c, 0, 25);
+  return c;
+}
+
+byte * Jogador() {
+  byte * c = malloc(15);
+  memset(c, 0, 15);
+  return c;
+}
+
+void popule(byte ** c) {
+  time_t now;
+  localtime(&now);
+  srand(time(&now));
+
+  byte cartela[5][5];
+  memset(cartela[0], 0, 25);
+
+  for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
+      const byte ini = (byte)bingo_range[j][0], fim = (byte)bingo_range[j][1];
+
+      int c = 0;
+      byte value = 0;
+
+      while (strchr((const char*)cartela[i], value))
+          value = sorteie(ini, fim);
+      cartela[i][j] = value;
+    }
   }
 
-  fputc('\n', logfile);
-  fclose(logfile);
-  fclose(cartf);
+  for (int i = 0; i < 5; i++) {
+    ordene(&cartela[i], 5);
+  }
+  memcpy(c, cartela, 25);
+}
 
-  puts("Joao");
-  return '0';
+byte sorteie(char inicio, char limite) {
+  return inicio + (rand() % (limite - inicio));
+}
+
+void mostreCartela(const char ** cartela) {
+  printf("    ");
+  for (char j = 0; j < 5; j++)
+      printf(" %02c  ", bingo[j]);
+  puts("");
+
+  for (char i = 0; i < 5; i++) {
+    for (char j = 0; j < 5; j++) {
+      if (j == 0) {
+        printf(" %i |", i+1);
+      }
+
+      byte value = cartela[i][j];
+      printf(" %02i |", value);
+
+      if (!((j+1)%5))
+          puts("");
+    }
+  }
+}
+
+int salveCartela(
+ FILE * file,
+ const byte ** cartela,
+ const int jogador_id,
+ const int cart_id 
+) {
+  fwrite(&jogador_id, sizeof(int), 1, file);
+  fwrite(&cart_id, sizeof(int), 1, file);
+  fwrite(cartela, 5, 5, file);
+  return ftell(file);
+}
+
+int abraCartela(
+ FILE * file,
+ const byte ** cartela,
+ const int jogador_id,
+ const int cart_id 
+) {
+  fread(&jogador_id, sizeof(int), 1, file);
+  fread(&cart_id, sizeof(int), 1, file);
+  fread(cartela, 5, 5, file);
+  return ftell(file);
+}
+
+void mostreTitulo(
+    const char * title,
+) {
+  printf(" %010s | %010s\n", "BINGO", title);
+  mostreLinha();
+}
+
+void mostreLinha() {
+  puts  (" -----------------------");
 }
