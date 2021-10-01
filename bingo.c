@@ -62,9 +62,7 @@ void popule(byte ** c) {
     for (int j = 0; j < 5; j++) {
       const byte ini = (byte)bingo_range[j][0], fim = (byte)bingo_range[j][1];
 
-      int c = 0;
       byte value = 0;
-
       while (strchr((const char*)cartela[i], value))
           value = sorteie(ini, fim);
       cartela[i][j] = value;
@@ -72,7 +70,7 @@ void popule(byte ** c) {
   }
 
   for (int i = 0; i < 5; i++) {
-    ordene(&cartela[i], 5);
+    ordene((byte *)&cartela[i], 5);
   }
   memcpy(c, cartela, 25);
 }
@@ -83,12 +81,12 @@ byte sorteie(char inicio, char limite) {
 
 void mostreCartela(const char ** cartela) {
   printf("    ");
-  for (char j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
       printf(" %02c  ", bingo[j]);
   puts("");
 
-  for (char i = 0; i < 5; i++) {
-    for (char j = 0; j < 5; j++) {
+  for (int i = 0; i < 5; i++) {
+    for (int j = 0; j < 5; j++) {
       if (j == 0) {
         printf(" %i |", i+1);
       }
@@ -122,7 +120,7 @@ int abraCartela(
  const byte ** cartela,
  const char * jogador_id
 ) {
-  fread(jogador_id, 20, 1, file);
+  fread((void *)jogador_id, 20, 1, file);
   fread(cartela, 5, 5, file);
   return ftell(file);
 }
@@ -137,9 +135,9 @@ void mostreLinha() {
 }
 
 int carts = 25+sizeof(int)*2;
-byte Bingo() {
+byte Bingo(void) {
   byte in = 0;
-  byte historico[99];
+  char historico[99];
   memset(historico, 0, 99);
 
   byte value = 0;
@@ -161,16 +159,15 @@ byte Bingo() {
 
       int cart_count = 0, equal_count = 0;
 
-      byte ** cart = Cartela(1);
+      byte ** cart = Cartela();
       byte jog[20];
       {
         int l = 0;
-        int i = 'a'-1;
         fseek(cartf, 0, SEEK_END);
         int cartsize = ftell(cartf);
         fseek(cartf, 0, SEEK_SET);
 
-        while ((l = abreCartela(cartf, jog, cart)) && l+(25+20) <= cartsize) {
+        while ((l = abraCartela(cartf, (const byte **)cart, (char *)jog)) && l+(25+20) <= cartsize) {
           const char * c = (const char *)*cart;
           if (strchr(c, value)) cart_count ++;
 
@@ -188,7 +185,7 @@ byte Bingo() {
         printf(" Ela está em pelo menos %i cartelas \n", cart_count);
       if (equal_count == 25) {
         printf(" BINGOOO!! o jogador %s ganhou com a cartela: \n", jog);
-        mostreCartela(cart);
+        mostreCartela((const char **)cart);
         fputc('\n', logfile);
         break;
       }
@@ -209,7 +206,7 @@ byte Bingo() {
     }
 
     while (strchr((const char*)historico, value))
-      value = Randchar(1, 99);
+      value = sorteie(1, 99);
 
     historico[strlen(historico)-1] = value;
   }

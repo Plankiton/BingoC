@@ -3,13 +3,6 @@
 #define jogadorfn "jogador.bin"
 #define partidafn "partida.bin"
 
-typedef enum {
-  main = 0,
-  cart,
-  jog,
-  play
-} menu;
-
 typedef unsigned char byte;
 
 int abraCartela(
