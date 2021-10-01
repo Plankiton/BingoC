@@ -98,10 +98,12 @@ void PrintCartela(char cartela[5][5]) {
   }
 }
 
-int saveCartela(FILE * file, const char * jogador, const uchar ** cartela) {
+int saveCartela(FILE * file, const char * jogador, const uchar ** cartela, int overid) {
   int i;
 
   fseek(file, -1, SEEK_END);
+  if (overid)
+    fseek(file, overid, SEEK_SET);
 
   int jog_size = strlen(jogador);
   fwrite(jogador, 1, jog_size, file);
@@ -111,7 +113,7 @@ int saveCartela(FILE * file, const char * jogador, const uchar ** cartela) {
 
   fwrite(cartela, 5, 5, file);
   fputc('\n', file);
-  return ftell(file);
+  return ftell(file) - (5*5 + GAMER_NAME_SIZE);
 }
 
 int openCartela(FILE * file, const char * jogador, const uchar ** cartela) {

@@ -9,4 +9,4 @@ uchar ** Cartela(uchar);
 void troca(uchar *, uchar *);
 void OrgVet(uchar *, uchar n);
 
-int saveCartela(FILE * file, const char *, const uchar **);
+int saveCartela(FILE * file, const char *, const uchar **, int);
